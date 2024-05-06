@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Check if the script is running as root
+if [[ $(id -u) -ne 0 ]]; then
+    echo "This script must be run as root" >&2
+    exit 1
+fi
+
+# Define an associative array with types and description
+declare -A dmitypes=(
+    [0]="bios"
+    [1]="system"
+    [2]="baseboard"
+    [3]="chassis"
+    [4]="processor"
+    [7]="cache"
+    [9]="slot"
+    [11]="oem-strings"
+    [16]="memory-array"
+    [17]="memory-device"
+    [19]="memory-array-mapped-address"
+    [20]="memory-device-mapped-address"
+    [22]="battery"
+    [27]="cooling-device"
+    [28]="temperature-probe"
+    [29]="current-probe"
+    [32]="system-boot"
+    [38]="ipmi-device"
+    [39]="power-supply"
+)
+
+# Directory to save the files
+output_dir="./dmidecode_reports"
+mkdir -p "$output_dir"
+
+# Extract and save the information
+for type in "${!dmitypes[@]}"; do
+    dmidecode -t $type > "${output_dir}/${dmitypes[$type]}.txt"
+done
+
+# Extract information using specific strings
+declare -a dmi_strings=(
+    "bios-version"
+    "system-serial-number"
+    "baseboard-serial-number"
+    "chassis-serial-number"
+)
+
+for string in "${dmi_strings[@]}"; do
+    dmidecode -s $string > "${output_dir}/${string}.txt"
+done
+
+echo "DMI data extraction complete. Check the ${output_dir} directory for reports."
